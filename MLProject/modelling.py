@@ -31,7 +31,6 @@ LEARNING_RATE = 0.001
 
 MLRUNS_DIR = PROJECT_DIR / "mlruns"
 mlflow.set_tracking_uri(MLRUNS_DIR.as_uri())
-mlflow.set_experiment("5_Animal_CNN_Classification")
 
 
 # 2. VALIDASI DATASET
