@@ -45,6 +45,8 @@ jobs:
           conda install -y -c conda-forge pyarrow
           python -m pip install "mlflow==2.19.0"
 
+          python -c "import mlflow, pyarrow; print('MLflow:', mlflow.__version__); print('PyArrow:', pyarrow.__version__)"
+
       # 4. Run MLflow Project
 
       - name: Run MLflow Project
