@@ -13,102 +13,51 @@ on:
 permissions:
   contents: write
 
-
 jobs:
   train-build-push:
-
     runs-on: ubuntu-latest
 
     steps:
-
-      # 1. Checkout Repository
-
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # 2. Setup Miniconda
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
 
       - name: Setup Miniconda
         uses: conda-incubator/setup-miniconda@v3
         with:
           auto-activate-base: true
           miniforge-version: latest
-          activate-environment: ci-env
-          python-version: "3.10"
+          activate-environment: base
           conda-remove-defaults: true
-
-      # 3. Install MLflow
 
       - name: Install MLflow
         shell: bash -el {0}
         run: |
-          python --version
-          python -m pip install --upgrade pip setuptools wheel
           python -m pip install "mlflow==2.19.0"
-
-      # 4. Run MLflow Project
 
       - name: Run MLflow Project
         shell: bash -el {0}
         run: |
           mlflow run ./MLProject \
+            --env-manager conda \
             --experiment-name "5_Animal_CNN_Classification"
-
-      # 5. Verify Exported MLflow Model
 
       - name: Verify Exported Model
         shell: bash
         run: |
-          echo "Checking MLflow model..."
+          test -f MLProject/exported_model/MLmodel
 
-          test -f MLProject/model/MLmodel
-
-          echo "MLflow model berhasil dibuat."
-          echo "Isi folder model:"
-          find MLProject/model -maxdepth 2 -type f | sort
-
-      # 6. Prepare GitHub Artifact
-
-      - name: Prepare Model Artifact
-        shell: bash
+      - name: Build Docker Image
+        shell: bash -el {0}
         run: |
-          mkdir -p artifacts
-
-          rm -rf artifacts/model
-
-          cp -r MLProject/model artifacts/model
-
-          echo "Artifact berhasil disiapkan."
-
-          find artifacts/model -maxdepth 2 -type f | sort
-
-      # 7. Save Model Artifact to GitHub Repository
-
-      - name: Save Model to GitHub Repository
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email \
-            "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add -f artifacts/model
-
-          if ! git diff --cached --quiet; then
-
-            git commit -m "chore: update trained model artifact"
-
-            git push origin "HEAD:${GITHUB_REF_NAME}"
-
-          else
-
-            echo "Tidak ada perubahan pada model artifact."
-
-          fi
-
-      # 8. Login to Docker Hub
+          mlflow models build-docker \
+            -m ./MLProject/exported_model \
+            -n "${{ secrets.DOCKERHUB_USERNAME }}/5_animal-classification:latest" \
+            --env-manager conda
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -116,20 +65,26 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 9. Build Docker Image menggunakan MLflow
-
-      - name: Build Docker Image
-        shell: bash -el {0}
-        run: |
-          mlflow models build-docker \
-          -m ./MLProject/model \
-          -n "${{ secrets.DOCKERHUB_USERNAME }}/5_animal-classification:latest" \
-          --env-manager conda
-
-      # 10. Push Docker Image ke Docker Hub
-
       - name: Push Docker Image
         shell: bash
         run: |
           docker push \
             "${{ secrets.DOCKERHUB_USERNAME }}/5_animal-classification:latest"
+
+      - name: Save Model to GitHub Repository
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          rm -rf artifacts/exported_model
+          cp -r MLProject/exported_model artifacts/exported_model
+
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -f artifacts/exported_model
+
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: update trained model artifact"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
