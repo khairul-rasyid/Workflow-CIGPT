@@ -70,14 +70,15 @@ jobs:
       - name: Inspect MLflow Model Environment
         shell: bash
         run: |
-          python --version
-          find MLProject/model -maxdepth 2 -type f | sort
+          echo "=== MLmodel ==="
+          cat MLProject/model/MLmodel
+
+          echo "=== Conda Environment ==="
           if [ -f MLProject/model/conda.yaml ]; then
             cat MLProject/model/conda.yaml
           fi
-          if [ -f MLProject/model/python_env.yaml ]; then
-            cat MLProject/model/python_env.yaml
-          fi
+
+          echo "=== Python Requirements ==="
           if [ -f MLProject/model/requirements.txt ]; then
             cat MLProject/model/requirements.txt
           fi
@@ -139,7 +140,7 @@ jobs:
           mlflow models build-docker \
           -m ./MLProject/model \
           -n "${{ secrets.DOCKERHUB_USERNAME }}/5_animal-classification:latest" \
-          --env-manager conda
+          --env-manager virtualenv
 
       # 10. Push Docker Image ke Docker Hub
 
