@@ -7,7 +7,7 @@ channels:
 dependencies:
 - python=3.12.7
 - pip<=26.2.1
-- pyarrow
+- pyarrow=18.1.0
 - pip:
   - mlflow==2.19.0
   - tensorflow==2.18.0

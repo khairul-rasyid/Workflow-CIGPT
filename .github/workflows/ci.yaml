@@ -42,7 +42,7 @@ jobs:
         shell: bash -el {0}
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          conda install -y -c conda-forge pyarrow
+          conda install -y -c conda-forge "pyarrow=18.1.0"
           python -m pip install "mlflow==2.19.0"
 
           python -c "import mlflow, pyarrow; print('MLflow:', mlflow.__version__); print('PyArrow:', pyarrow.__version__)"
