@@ -120,14 +120,20 @@ jobs:
 
       # 9. Build Docker Image menggunakan MLflow
 
+      - name: Install uv
+        shell: bash -el {0}
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install uv
+          uv --version
+
       - name: Build Docker Image
         shell: bash -el {0}
         run: |
           mlflow models build-docker \
-            -m ./MLProject/model \
-            -n "${{ secrets.DOCKERHUB_USERNAME }}/5_animal-classification:latest"
-            --env-manager local \
-            --base-image python:3.12-slim
+          -m ./MLProject/model \
+          -n "${{ secrets.DOCKERHUB_USERNAME }}/5_animal-classification:latest" \
+          --env-manager uv
 
       # 10. Push Docker Image ke Docker Hub
 
