@@ -126,7 +126,7 @@ jobs:
           mlflow models build-docker \
             -m ./MLProject/model \
             -n "${{ secrets.DOCKERHUB_USERNAME }}/5_animal-classification:latest"
-            --env-manager conda
+            --env-manager local
 
       # 10. Push Docker Image ke Docker Hub
 
