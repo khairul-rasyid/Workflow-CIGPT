@@ -81,7 +81,6 @@ jobs:
           if [ -f MLProject/model/requirements.txt ]; then
             cat MLProject/model/requirements.txt
           fi
-```
 
       # 6. Prepare GitHub Artifact
 
