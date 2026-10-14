@@ -52,7 +52,6 @@ jobs:
         shell: bash -el {0}
         run: |
           mlflow run ./MLProject \
-            --env-manager=conda \
             --experiment-name "5_Animal_CNN_Classification"
 
       # 5. Verify Exported MLflow Model
