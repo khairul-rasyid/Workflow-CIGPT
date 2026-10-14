@@ -1,0 +1,131 @@
+name: CI - 5 Animal CNN
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "MLProject/**"
+      - ".github/workflows/ci.yaml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+
+jobs:
+  train-build-push:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # 1. Checkout Repository
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2. Setup Miniconda
+
+      - name: Setup Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-activate-base: true
+          miniforge-version: latest
+          activate-environment: base
+          conda-remove-defaults: true
+
+      # 3. Install MLflow
+
+      - name: Install MLflow
+        shell: bash -el {0}
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "mlflow==2.19.0"
+
+      # 4. Run MLflow Project
+
+      - name: Run MLflow Project
+        shell: bash -el {0}
+        run: |
+          mlflow run ./MLProject --env-manager=conda
+
+      # 5. Verify Exported MLflow Model
+
+      - name: Verify Exported Model
+        shell: bash
+        run: |
+          echo "Checking MLflow model..."
+
+          test -f MLProject/model/MLmodel
+
+          echo "MLflow model berhasil dibuat."
+          echo "Isi folder model:"
+          find MLProject/model -maxdepth 2 -type f | sort
+
+      # 6. Prepare GitHub Artifact
+
+      - name: Prepare Model Artifact
+        shell: bash
+        run: |
+          mkdir -p artifacts
+
+          rm -rf artifacts/model
+
+          cp -r MLProject/model artifacts/model
+
+          echo "Artifact berhasil disiapkan."
+
+          find artifacts/model -maxdepth 2 -type f | sort
+
+      # 7. Save Model Artifact to GitHub Repository
+
+      - name: Save Model to GitHub Repository
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -f artifacts/model
+
+          if ! git diff --cached --quiet; then
+
+            git commit -m "chore: update trained model artifact"
+
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+
+          else
+
+            echo "Tidak ada perubahan pada model artifact."
+
+          fi
+
+      # 8. Login to Docker Hub
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 9. Build Docker Image menggunakan MLflow
+
+      - name: Build Docker Image
+        shell: bash -el {0}
+        run: |
+          mlflow models build-docker \
+            -m ./MLProject/model \
+            -n "${{ secrets.DOCKERHUB_USERNAME }}/5_animal-classification:latest"
+
+      # 10. Push Docker Image ke Docker Hub
+
+      - name: Push Docker Image
+        shell: bash
+        run: |
+          docker push \
+            "${{ secrets.DOCKERHUB_USERNAME }}/5_animal-classification:latest"
