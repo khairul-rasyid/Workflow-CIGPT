@@ -5,7 +5,7 @@ flavors:
       conda: conda.yaml
       virtualenv: python_env.yaml
     loader_module: mlflow.tensorflow
-    python_version: 3.12.7
+    python_version: 3.10.22
   tensorflow:
     code: null
     data: data
@@ -13,12 +13,12 @@ flavors:
     model_type: keras
     save_format: tf
 mlflow_version: 2.19.0
-model_size_bytes: 1372190
-model_uuid: 8219449ba43b44089cb52e6b95de3bb2
+model_size_bytes: 1371908
+model_uuid: 986263877a3c479aa8771bf82d432588
 signature:
   inputs: '[{"type": "tensor", "tensor-spec": {"dtype": "float32", "shape": [-1, 224,
     224, 3]}}]'
   outputs: '[{"type": "tensor", "tensor-spec": {"dtype": "float32", "shape": [-1,
     5]}}]'
   params: null
-utc_time_created: '2026-10-15 09:00:37.433228'
+utc_time_created: '2026-10-15 09:33:49.130056'
