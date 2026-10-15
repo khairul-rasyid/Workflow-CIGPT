@@ -14,11 +14,11 @@ flavors:
     save_format: tf
 mlflow_version: 2.19.0
 model_size_bytes: 1372190
-model_uuid: 12800d9acbc6439089c08fe4ffed9f25
+model_uuid: 2981085ccfcb4058a4929702e7ccf5b5
 signature:
   inputs: '[{"type": "tensor", "tensor-spec": {"dtype": "float32", "shape": [-1, 224,
     224, 3]}}]'
   outputs: '[{"type": "tensor", "tensor-spec": {"dtype": "float32", "shape": [-1,
     5]}}]'
   params: null
-utc_time_created: '2026-10-15 08:19:46.981357'
+utc_time_created: '2026-10-15 08:35:36.585600'
